@@ -27,7 +27,7 @@ export async function isAdmin(userId: string): Promise<boolean> {
  * Add your admin emails here
  */
 export const ADMIN_EMAILS = [
-  '1@gmail.com', // Replace with your actual admin email
+  'admin@tsok.com', // Replace with your actual admin email
   // Add more admin emails here:
   // 'admin2@example.com',
   // 'admin3@example.com',
