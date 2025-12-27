@@ -171,10 +171,10 @@ export default function Home() {
             </div>
           </div>
           <p className="text-gray-400 text-sm">
-            © {isClient ? new Date().getFullYear() : '2024'} TSOK. All rights reserved.
+            © {isClient ? new Date().getFullYear() : '2025'} TSOK. All rights reserved.
           </p>
           <p className="text-gray-500 text-xs mt-2">
-            Developed by Godmisoft
+            Developed by Heber Mayormita, LPT
           </p>
         </div>
       </footer>
