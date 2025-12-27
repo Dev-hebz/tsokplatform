@@ -69,7 +69,7 @@ export default function AboutPage() {
             © {new Date().getFullYear()} TSOK. All rights reserved.
           </p>
           <p className="text-gray-500 text-xs mt-2">
-            Developed by Godmisoft
+            Developed by Heber Mayormita, LPT
           </p>
         </div>
       </footer>
