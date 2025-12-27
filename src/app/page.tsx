@@ -119,10 +119,7 @@ export default function Home() {
           <p className="text-xl md:text-2xl mb-8 text-blue-100">
             Empowering Educators Through Quality Online Learning
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/courses" className="bg-white text-tsok-blue px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg">
-              Browse Courses
-            </Link>
+          <div className="flex justify-center">
             <Link href="/register" className="bg-tsok-yellow text-tsok-blue px-8 py-4 rounded-lg font-semibold hover:bg-yellow-400 transition-colors shadow-lg">
               Get Started Free
             </Link>
