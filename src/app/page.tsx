@@ -58,9 +58,6 @@ export default function Home() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="/courses" className="text-gray-700 hover:text-tsok-blue transition-colors">
-                Courses
-              </Link>
               <Link href="/about" className="text-gray-700 hover:text-tsok-blue transition-colors">
                 About
               </Link>
@@ -86,9 +83,6 @@ export default function Home() {
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
             <div className="md:hidden pb-4 space-y-2">
-              <Link href="/courses" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">
-                Courses
-              </Link>
               <Link href="/about" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">
                 About
               </Link>
