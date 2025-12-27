@@ -344,7 +344,7 @@ export default function AdminDashboard() {
 
           {/* Footer */}
           <div className="mt-8 text-center text-gray-500 text-sm">
-            <p>Developed by Godmisoft</p>
+            <p>Developed by Heber Mayormita, LPT</p>
           </div>
         </main>
       </div>
