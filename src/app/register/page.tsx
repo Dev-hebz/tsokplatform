@@ -199,7 +199,7 @@ export default function RegisterPage() {
         </div>
 
         <p className="text-center text-white text-sm mt-6">
-          Developed by Godmisoft
+          Developed by Heber Mayormita, LPT
         </p>
       </div>
     </div>
