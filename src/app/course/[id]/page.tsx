@@ -5,8 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import YouTube from 'react-youtube';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../../../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { ArrowLeft, CheckCircle, Circle, PlayCircle, Clock, BookOpen } from 'lucide-react';
 
 export default function CoursePage() {
@@ -15,13 +16,25 @@ export default function CoursePage() {
   const [course, setCourse] = useState<any>(null);
   const [currentVideo, setCurrentVideo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [completedVideos, setCompletedVideos] = useState<string[]>([]);
 
   useEffect(() => {
-    loadCourse();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        loadCourse(currentUser.uid);
+      } else {
+        router.push('/login');
+      }
+    });
+
+    return () => unsubscribe();
   }, [params.id]);
 
-  const loadCourse = async () => {
+  const loadCourse = async (userId: string) => {
     try {
+      // Load course data
       const docRef = doc(db, 'courses', params.id as string);
       const docSnap = await getDoc(docRef);
       
@@ -43,11 +56,100 @@ export default function CoursePage() {
             courseData.modules[0].videos.length > 0) {
           setCurrentVideo(courseData.modules[0].videos[0]);
         }
+
+        // Load user progress
+        await loadProgress(userId);
+        
+        // Auto-enroll user in course
+        await enrollUser(userId, courseData.id);
       }
     } catch (error) {
       console.error('Error loading course:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadProgress = async (userId: string) => {
+    try {
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const courseProgress = userData.progress?.[params.id as string];
+        if (courseProgress?.completedVideos) {
+          setCompletedVideos(courseProgress.completedVideos);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading progress:', error);
+    }
+  };
+
+  const enrollUser = async (userId: string, courseId: string) => {
+    try {
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const progress = userData.progress || {};
+        
+        // Only enroll if not already enrolled
+        if (!progress[courseId]) {
+          progress[courseId] = {
+            enrolledAt: new Date().toISOString(),
+            completedVideos: [],
+            lastAccessed: new Date().toISOString()
+          };
+          
+          await updateDoc(userRef, { progress });
+        } else {
+          // Update last accessed
+          progress[courseId].lastAccessed = new Date().toISOString();
+          await updateDoc(userRef, { progress });
+        }
+      }
+    } catch (error) {
+      console.error('Error enrolling user:', error);
+    }
+  };
+
+  const markVideoComplete = async (videoId: string) => {
+    if (!user || completedVideos.includes(videoId)) return;
+
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        const progress = userData.progress || {};
+        const courseProgress = progress[params.id as string] || {
+          enrolledAt: new Date().toISOString(),
+          completedVideos: []
+        };
+        
+        // Add video to completed list
+        if (!courseProgress.completedVideos.includes(videoId)) {
+          courseProgress.completedVideos.push(videoId);
+          courseProgress.lastAccessed = new Date().toISOString();
+          
+          progress[params.id as string] = courseProgress;
+          
+          await updateDoc(userRef, { progress });
+          setCompletedVideos(courseProgress.completedVideos);
+        }
+      }
+    } catch (error) {
+      console.error('Error marking video complete:', error);
+    }
+  };
+
+  const handleVideoEnd = () => {
+    if (currentVideo) {
+      markVideoComplete(currentVideo.id);
     }
   };
 
@@ -126,6 +228,7 @@ export default function CoursePage() {
                   <YouTube
                     videoId={currentVideo.youtubeId}
                     opts={opts}
+                    onEnd={handleVideoEnd}
                     className="w-full h-full"
                   />
                 </div>
@@ -138,6 +241,12 @@ export default function CoursePage() {
                       <Clock className="w-4 h-4" />
                       <span>{currentVideo.duration}</span>
                     </div>
+                    {completedVideos.includes(currentVideo.id) && (
+                      <div className="flex items-center space-x-1 text-green-600">
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Completed</span>
+                      </div>
+                    )}
                   </div>
                   <p className="text-gray-700">{currentVideo.description}</p>
                 </div>
@@ -178,7 +287,9 @@ export default function CoursePage() {
                             >
                               <div className="flex items-start space-x-3">
                                 <div className="mt-1">
-                                  {currentVideo?.id === video.id ? (
+                                  {completedVideos.includes(video.id) ? (
+                                    <CheckCircle className="w-5 h-5 text-green-500" />
+                                  ) : currentVideo?.id === video.id ? (
                                     <PlayCircle className="w-5 h-5" />
                                   ) : (
                                     <Circle className="w-5 h-5" />
@@ -203,6 +314,35 @@ export default function CoursePage() {
                   ))
                 ) : (
                   <p className="text-sm text-gray-500 py-4">No modules available</p>
+                )}
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mt-6 pt-6 border-t">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-600">Your Progress</span>
+                  <span className="font-semibold text-tsok-blue">
+                    {completedVideos.length} / {course.modules.reduce((total: number, m: any) => total + (m.videos?.length || 0), 0)} completed
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-gradient-to-r from-tsok-blue to-blue-700 h-2.5 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${course.modules.reduce((total: number, m: any) => total + (m.videos?.length || 0), 0) > 0 
+                        ? (completedVideos.length / course.modules.reduce((total: number, m: any) => total + (m.videos?.length || 0), 0)) * 100 
+                        : 0}%`
+                    }}
+                  ></div>
+                </div>
+                {completedVideos.length === course.modules.reduce((total: number, m: any) => total + (m.videos?.length || 0), 0) && 
+                 course.modules.reduce((total: number, m: any) => total + (m.videos?.length || 0), 0) > 0 && (
+                  <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center space-x-2 text-green-700">
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="font-semibold text-sm">Course Completed! 🎉</span>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>

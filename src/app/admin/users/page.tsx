@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { auth, db } from '../../../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { isAdmin } from '../../../lib/adminAuth';
 import { 
   ArrowLeft, 
   Users,
@@ -31,10 +32,16 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         router.push('/admin/login');
       } else {
+        const adminStatus = await isAdmin(currentUser.uid);
+        if (!adminStatus) {
+          alert('Access denied. Admin privileges required.');
+          router.push('/courses');
+          return;
+        }
         fetchUsers();
       }
     });

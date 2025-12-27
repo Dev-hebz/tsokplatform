@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebase';
+import { isAdminEmail } from '../../lib/adminAuth';
 import { ArrowLeft, Mail, Lock, User, UserPlus } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -44,6 +45,7 @@ export default function RegisterPage() {
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         name,
         email,
+        role: isAdminEmail(email) ? 'admin' : 'student',
         createdAt: new Date().toISOString(),
         progress: {}
       });

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { isAdmin } from '../../lib/adminAuth';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -42,10 +43,18 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         router.push('/admin/login');
       } else {
+        // Check if user is admin
+        const adminStatus = await isAdmin(currentUser.uid);
+        if (!adminStatus) {
+          // Not admin - redirect to student courses
+          alert('Access denied. Admin privileges required.');
+          router.push('/courses');
+          return;
+        }
         setUser(currentUser);
         fetchCourses();
       }
