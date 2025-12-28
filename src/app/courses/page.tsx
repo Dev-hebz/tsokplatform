@@ -18,14 +18,30 @@ export default function CoursesPage() {
   const loadCourses = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'courses'));
-      const coursesData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        title: doc.data().title || 'Untitled',
-        description: doc.data().description || '',
-        category: doc.data().category || 'General',
-        thumbnail: doc.data().thumbnail || '',
-        modules: doc.data().modules || []
-      }));
+      const coursesData = snapshot.docs.map(doc => {
+        const data = doc.data();
+        let thumbnail = data.thumbnail || '';
+        
+        // Auto-generate thumbnail from first video if not set
+        if (!thumbnail && data.modules && data.modules.length > 0) {
+          const firstModule = data.modules[0];
+          if (firstModule.videos && firstModule.videos.length > 0) {
+            const firstVideo = firstModule.videos[0];
+            if (firstVideo.youtubeId) {
+              thumbnail = `https://i.ytimg.com/vi/${firstVideo.youtubeId}/maxresdefault.jpg`;
+            }
+          }
+        }
+        
+        return {
+          id: doc.id,
+          title: data.title || 'Untitled',
+          description: data.description || '',
+          category: data.category || 'General',
+          thumbnail: thumbnail,
+          modules: data.modules || []
+        };
+      });
       
       setCourses(coursesData);
     } catch (error) {
@@ -65,7 +81,7 @@ export default function CoursesPage() {
                   className="object-contain"
                 />
                 <div>
-                  <h1 className="text-2xl font-bold text-tsok-blue">TSOK Courses</h1>
+                  <h1 className="text-2xl font-bold text-tsok-blue">TSOK Subjects</h1>
                   <p className="text-sm text-gray-600">Browse Our Learning Resources</p>
                 </div>
               </div>
@@ -77,9 +93,9 @@ export default function CoursesPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Available Courses</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">Available Subjects</h2>
           <p className="text-gray-600">
-            Enhance your teaching skills with our comprehensive course library
+            Enhance your teaching skills with our comprehensive subject library
           </p>
         </div>
 

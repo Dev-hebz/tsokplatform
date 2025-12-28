@@ -21,18 +21,13 @@ export default function Home() {
     },
     {
       icon: <BookOpen className="w-8 h-8" />,
-      title: "Structured Courses",
+      title: "Structured Subjects",
       description: "Well-organized modules for effective learning"
     },
     {
       icon: <Users className="w-8 h-8" />,
       title: "Track Progress",
       description: "Monitor your learning journey with detailed analytics"
-    },
-    {
-      icon: <Award className="w-8 h-8" />,
-      title: "Certificates",
-      description: "Earn certificates upon course completion"
     }
   ];
 
