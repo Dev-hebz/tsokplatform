@@ -206,7 +206,7 @@ export default function AddEditCoursePage() {
               />
               <div>
                 <h1 className="text-xl font-bold text-tsok-blue">
-                  {isEdit ? 'Edit Course' : 'Add New Course'}
+                  {isEdit ? 'Edit Course' : 'Add New Subject'}
                 </h1>
                 <p className="text-xs text-gray-600">TSOK Admin Dashboard</p>
               </div>
@@ -228,7 +228,7 @@ export default function AddEditCoursePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Course Title *
+                  Subject Title *
                 </label>
                 <input
                   type="text"
@@ -472,7 +472,7 @@ export default function AddEditCoursePage() {
                 ) : (
                   <>
                     <Save className="w-5 h-5" />
-                    <span>{isEdit ? 'Update Course' : 'Create Course'}</span>
+                    <span>{isEdit ? 'Update Subject' : 'Create Subject'}</span>
                   </>
                 )}
               </button>

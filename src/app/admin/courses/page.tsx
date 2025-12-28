@@ -76,17 +76,17 @@ export default function AdminCoursesPage() {
   };
 
   const handleDelete = async (courseId: string, courseTitle: string) => {
-    if (!confirm(`Delete course "${courseTitle}"? This cannot be undone.`)) {
+    if (!confirm(`Delete subject "${courseTitle}"? This cannot be undone.`)) {
       return;
     }
 
     try {
       await deleteDoc(doc(db, 'courses', courseId));
       setCourses(courses.filter(c => c.id !== courseId));
-      alert('Course deleted successfully!');
+      alert('Subject deleted successfully!');
     } catch (error) {
       console.error('Error deleting course:', error);
-      alert('Failed to delete course. Please try again.');
+      alert('Failed to delete subject. Please try again.');
     }
   };
 
@@ -95,7 +95,7 @@ export default function AdminCoursesPage() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-tsok-blue mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading courses...</p>
+          <p className="text-gray-600">Loading subjects...</p>
         </div>
       </div>
     );
@@ -120,7 +120,7 @@ export default function AdminCoursesPage() {
                   className="object-contain"
                 />
                 <div>
-                  <h1 className="text-xl font-bold text-tsok-blue">Course Management</h1>
+                  <h1 className="text-xl font-bold text-tsok-blue">Subject Management</h1>
                   <p className="text-xs text-gray-600">TSOK Admin Dashboard</p>
                 </div>
               </div>
@@ -128,7 +128,7 @@ export default function AdminCoursesPage() {
 
             <Link href="/admin/courses/add" className="btn-primary flex items-center space-x-2">
               <Plus className="w-5 h-5" />
-              <span>Add New Course</span>
+              <span>Add New Subject</span>
             </Link>
           </div>
         </div>
@@ -138,19 +138,19 @@ export default function AdminCoursesPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            All Courses ({courses.length})
+            All Subjects ({courses.length})
           </h2>
-          <p className="text-gray-600">Manage your course content and structure</p>
+          <p className="text-gray-600">Manage your subject content and structure</p>
         </div>
 
         {courses.length === 0 ? (
           <div className="card text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No courses yet</h3>
-            <p className="text-gray-500 mb-6">Get started by creating your first course</p>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No subjects yet</h3>
+            <p className="text-gray-500 mb-6">Get started by creating your first subject</p>
             <Link href="/admin/courses/add" className="btn-primary inline-flex items-center space-x-2">
               <Plus className="w-5 h-5" />
-              <span>Create First Course</span>
+              <span>Create First Subject</span>
             </Link>
           </div>
         ) : (

@@ -193,7 +193,7 @@ export default function AdminUsersPage() {
                         <div className="flex items-center space-x-2">
                           <Award className="w-4 h-4 text-tsok-yellow" />
                           <span className="text-sm text-gray-700">
-                            {Object.keys(user.progress || {}).length} courses enrolled
+                            {Object.keys(user.progress || {}).length} subjects enrolled
                           </span>
                         </div>
                       </td>

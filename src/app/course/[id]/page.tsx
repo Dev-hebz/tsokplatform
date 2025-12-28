@@ -172,7 +172,7 @@ export default function CoursePage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-tsok-blue mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading course...</p>
+          <p className="text-gray-600">Loading subject...</p>
         </div>
       </div>
     );
@@ -182,9 +182,9 @@ export default function CoursePage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl text-gray-600 mb-4">Course not found</p>
+          <p className="text-xl text-gray-600 mb-4">Subject not found</p>
           <Link href="/courses" className="btn-primary">
-            Back to Courses
+            Back to Subjects
           </Link>
         </div>
       </div>
@@ -260,12 +260,12 @@ export default function CoursePage() {
             )}
           </div>
 
-          {/* Course Content Sidebar */}
+          {/* Subject Content Sidebar */}
           <div className="lg:col-span-1">
             <div className="card sticky top-24">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
                 <BookOpen className="w-5 h-5" />
-                <span>Course Content</span>
+                <span>Subject Content</span>
               </h3>
               
               <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto pr-2">

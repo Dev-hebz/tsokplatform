@@ -95,7 +95,7 @@ export default function AdminDashboard() {
     try {
       await deleteDoc(doc(db, 'courses', courseId));
       fetchCourses();
-      alert('Course deleted successfully!');
+      alert('Subject deleted successfully!');
     } catch (error) {
       console.error('Error deleting course:', error);
       alert('Error deleting course');
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
             className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-blue-800 transition-colors"
           >
             <BookOpen className="w-5 h-5" />
-            <span>Courses</span>
+            <span>Subjects</span>
           </Link>
           <Link
             href="/admin/users"
@@ -224,7 +224,7 @@ export default function AdminDashboard() {
             <div className="card bg-gradient-to-br from-tsok-blue to-blue-900 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-200 text-sm mb-1">Total Courses</p>
+                  <p className="text-blue-200 text-sm mb-1">Total Subjects</p>
                   <p className="text-4xl font-bold">{stats.totalCourses}</p>
                 </div>
                 <BookOpen className="w-12 h-12 opacity-50" />
@@ -252,27 +252,27 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Courses Section */}
+          {/* Subjects Section */}
           <div className="card">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-800">Manage Courses</h3>
+              <h3 className="text-xl font-bold text-gray-800">Manage Subjects</h3>
               <Link
                 href="/admin/courses/add"
                 className="btn-primary flex items-center space-x-2"
               >
                 <Plus className="w-5 h-5" />
-                <span>Add New Course</span>
+                <span>Add New Subject</span>
               </Link>
             </div>
 
             {courses.length === 0 ? (
               <div className="text-center py-12">
                 <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">No courses yet</h3>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">No subjects yet</h3>
                 <p className="text-gray-500 mb-4">Create your first course to get started</p>
                 <Link href="/admin/courses/add" className="btn-primary inline-flex items-center space-x-2">
                   <Plus className="w-5 h-5" />
-                  <span>Create First Course</span>
+                  <span>Create First Subject</span>
                 </Link>
               </div>
             ) : (
