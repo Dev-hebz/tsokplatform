@@ -162,8 +162,14 @@ export default function CoursePage() {
     width: '100%',
     playerVars: {
       autoplay: 0,
-      modestbranding: 1,
-      rel: 0,
+      modestbranding: 1,  // Minimal YouTube branding
+      rel: 0,             // Don't show related videos
+      showinfo: 0,        // Hide video title and uploader (deprecated but still works)
+      iv_load_policy: 3,  // Hide video annotations
+      controls: 1,        // Show controls (play, pause, etc.)
+      fs: 1,              // Allow fullscreen
+      cc_load_policy: 0,  // Hide closed captions by default
+      disablekb: 0,       // Enable keyboard controls
     },
   };
 
