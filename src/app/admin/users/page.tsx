@@ -26,6 +26,12 @@ interface User {
   email: string;
   createdAt: string;
   progress?: any;
+  location?: {
+    country: string;
+    city: string;
+    ip: string;
+    lastAccess: string;
+  };
 }
 
 export default function AdminUsersPage() {
@@ -185,10 +191,16 @@ export default function AdminUsersPage() {
                       Email
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Joined
+                      Location
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Last Access
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Progress
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -213,8 +225,22 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center space-x-2 text-gray-700">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm">
+                            {user.location?.city && user.location?.country 
+                              ? `${user.location.city}, ${user.location.country}`
+                              : 'Not tracked'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2 text-gray-700">
                           <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm">{formatDate(user.createdAt)}</span>
+                          <span className="text-sm">
+                            {user.location?.lastAccess 
+                              ? formatDate(user.location.lastAccess)
+                              : 'Never'}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -224,6 +250,15 @@ export default function AdminUsersPage() {
                             {Object.keys(user.progress || {}).length} subjects enrolled
                           </span>
                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleDeleteUser(user.id, user.name, user.email)}
+                          className="text-red-600 hover:text-red-900 flex items-center space-x-1 text-sm font-medium"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Delete</span>
+                        </button>
                       </td>
                     </tr>
                   ))}

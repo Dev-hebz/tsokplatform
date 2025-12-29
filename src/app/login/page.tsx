@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
+import { auth, db } from '../../lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import { ArrowLeft, Mail, Lock, LogIn } from 'lucide-react';
 
 export default function LoginPage() {
@@ -21,7 +22,23 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Track location
+      try {
+        const locationData = await fetch('https://ipapi.co/json/');
+        const location = await locationData.json();
+        
+        await updateDoc(doc(db, 'users', userCredential.user.uid), {
+          'location.country': location.country_name || 'Unknown',
+          'location.city': location.city || 'Unknown',
+          'location.ip': location.ip || '',
+          'location.lastAccess': new Date().toISOString()
+        });
+      } catch (locError) {
+        console.log('Location tracking failed:', locError);
+      }
+      
       router.push('/courses');
     } catch (err: any) {
       setError(err.message || 'Failed to login');
@@ -36,7 +53,23 @@ export default function LoginPage() {
 
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      
+      // Track location
+      try {
+        const locationData = await fetch('https://ipapi.co/json/');
+        const location = await locationData.json();
+        
+        await updateDoc(doc(db, 'users', userCredential.user.uid), {
+          'location.country': location.country_name || 'Unknown',
+          'location.city': location.city || 'Unknown',
+          'location.ip': location.ip || '',
+          'location.lastAccess': new Date().toISOString()
+        });
+      } catch (locError) {
+        console.log('Location tracking failed:', locError);
+      }
+      
       router.push('/courses');
     } catch (err: any) {
       setError(err.message || 'Failed to login with Google');
@@ -162,9 +195,9 @@ export default function LoginPage() {
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link href="/register" className="text-tsok-blue font-semibold hover:text-blue-900">
-              Register now
+            Administrator?{' '}
+            <Link href="/admin/login" className="text-tsok-blue font-semibold hover:text-blue-900">
+              Access Admin Portal
             </Link>
           </p>
         </div>
