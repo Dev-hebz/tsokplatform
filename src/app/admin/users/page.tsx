@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { auth, db } from '../../../lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, deleteUser } from 'firebase/auth';
 import { isAdmin } from '../../../lib/adminAuth';
 import { 
   ArrowLeft, 
@@ -14,7 +14,10 @@ import {
   Calendar,
   Mail,
   Award,
-  Search
+  Search,
+  Plus,
+  Trash2,
+  MapPin
 } from 'lucide-react';
 
 interface User {
@@ -66,6 +69,25 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleDeleteUser = async (userId: string, userName: string, userEmail: string) => {
+    if (!confirm(`Delete user "${userName}" (${userEmail})? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // Delete from Firestore
+      await deleteDoc(doc(db, 'users', userId));
+      
+      // Update local state
+      setUsers(users.filter(u => u.id !== userId));
+      
+      alert('User deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Failed to delete user from database');
+    }
+  };
+
   const filteredUsers = users.filter(user => 
     user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -112,21 +134,27 @@ export default function AdminUsersPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="card">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 flex items-center space-x-2 mb-4 md:mb-0">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center space-x-2">
               <Users className="w-6 h-6 text-tsok-blue" />
               <span>Registered Users ({users.length})</span>
             </h2>
 
-            <div className="relative w-full md:w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-field pl-10"
-                placeholder="Search users..."
-              />
+            <div className="flex flex-col sm:flex-row gap-3 flex-1 md:flex-initial">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="input-field pl-10"
+                  placeholder="Search users..."
+                />
+              </div>
+              <Link href="/admin/users/add" className="btn-primary flex items-center justify-center space-x-2 whitespace-nowrap">
+                <Plus className="w-5 h-5" />
+                <span>Add User</span>
+              </Link>
             </div>
           </div>
 
