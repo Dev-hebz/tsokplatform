@@ -1,7 +1,7 @@
 {
   "name": "tsok-learning-platform",
   "version": "1.0.0",
-  "description": "TSOK Teachers Specialists Organization of Kuwait - Learning Platform",
+  "description": "TSOK Teachers-Specialists Organization of Kuwait - Learning Platform",
   "private": true,
   "scripts": {
     "dev": "next dev",
