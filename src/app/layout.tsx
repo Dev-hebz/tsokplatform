@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'TSOK Learning Platform',
-  description: 'Teachers Specialists Organization of Kuwait - Learning Platform',
+  description: 'Teachers-Specialists Organization of Kuwait - Learning Platform',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -20,12 +20,12 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: 'TSOK Learning Platform',
     title: 'TSOK Learning Platform',
-    description: 'Teachers Specialists Organization of Kuwait - Learning Platform',
+    description: 'Teachers-Specialists Organization of Kuwait - Learning Platform',
   },
   twitter: {
     card: 'summary',
     title: 'TSOK Learning Platform',
-    description: 'Teachers Specialists Organization of Kuwait - Learning Platform',
+    description: 'Teachers-Specialists Organization of Kuwait - Learning Platform',
   },
 }
 
