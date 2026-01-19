@@ -103,7 +103,7 @@ export default function Home() {
             className="mx-auto mb-8 drop-shadow-2xl"
           />
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Teachers Specialists Organization of Kuwait
+            Teachers-Specialists Organization of Kuwait
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-blue-100">
             Empowering Educators Through Quality Online Learning
