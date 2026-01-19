@@ -21,7 +21,7 @@ export default function AboutPage() {
               />
               <div>
                 <h1 className="text-xl font-bold text-tsok-blue">About TSOK</h1>
-                <p className="text-xs text-gray-600">Teachers Specialists Organization of Kuwait</p>
+                <p className="text-xs text-gray-600">Teachers-Specialists Organization of Kuwait</p>
               </div>
             </div>
           </div>
@@ -36,7 +36,7 @@ export default function AboutPage() {
           
           <div className="prose max-w-none">
             <p className="text-gray-700 mb-4">
-              The Teachers Specialists Organization of Kuwait (TSOK) Learning Platform is dedicated to 
+              The Teachers-Specialists Organization of Kuwait (TSOK) Learning Platform is dedicated to 
               empowering Filipino educators in Kuwait through quality online education and professional development.
             </p>
 
