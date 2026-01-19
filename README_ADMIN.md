@@ -1,6 +1,6 @@
 # TSOK Learning Platform - WITH ADMIN DASHBOARD
 
-**Teachers Specialists Organization of Kuwait - Learning Platform**
+**Teachers-Specialists Organization of Kuwait - Learning Platform**
 
 A complete learning management system with **DYNAMIC ADMIN DASHBOARD** for easy course management, YouTube video integration, Firebase backend, and PWA capabilities.
 
