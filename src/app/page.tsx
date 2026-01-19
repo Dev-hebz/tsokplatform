@@ -162,7 +162,7 @@ export default function Home() {
             />
             <div>
               <p className="font-semibold">TSOK</p>
-              <p className="text-sm text-gray-400">Teachers Specialists Organization of Kuwait</p>
+              <p className="text-sm text-gray-400">Teachers-Specialists Organization of Kuwait</p>
             </div>
           </div>
           <p className="text-gray-400 text-sm">
