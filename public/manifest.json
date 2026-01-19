@@ -1,7 +1,7 @@
 {
   "name": "TSOK Learning Platform",
   "short_name": "TSOK Learn",
-  "description": "Teachers Specialists Organization of Kuwait - Learning Platform",
+  "description": "Teachers-Specialists Organization of Kuwait - Learning Platform",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e3a8a",
