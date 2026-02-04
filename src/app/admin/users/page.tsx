@@ -52,6 +52,18 @@ export default function AdminUsersPage() {
     role: 'student'
   });
   const [editLoading, setEditLoading] = useState(false);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error' | 'info'}>({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -102,12 +114,12 @@ export default function AdminUsersPage() {
     if (!editingUser) return;
 
     if (!editFormData.name.trim()) {
-      alert('Name is required');
+      showToast('Name is required', 'error');
       return;
     }
 
     if (!editFormData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editFormData.email)) {
-      alert('Valid email is required');
+      showToast('Valid email is required', 'error');
       return;
     }
 
@@ -129,10 +141,10 @@ export default function AdminUsersPage() {
       ));
 
       setEditingUser(null);
-      alert('✓ User updated successfully!');
+      showToast('User updated successfully!', 'success');
     } catch (error) {
       console.error('Error updating user:', error);
-      alert('Failed to update user. Please try again.');
+      showToast('Failed to update user. Please try again.', 'error');
     } finally {
       setEditLoading(false);
     }
@@ -150,10 +162,10 @@ export default function AdminUsersPage() {
       // Update local state
       setUsers(users.filter(u => u.id !== userId));
       
-      alert('User deleted successfully!');
+      showToast('User deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Failed to delete user from database');
+      showToast('Failed to delete user from database', 'error');
     }
   };
 
@@ -529,6 +541,46 @@ export default function AdminUsersPage() {
                 <span>Save Changes</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Professional Toast Notification */}
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top-5 duration-300">
+          <div className={`flex items-center space-x-3 px-6 py-4 rounded-lg shadow-2xl border-l-4 ${
+            toast.type === 'success' ? 'bg-green-50 border-green-500' :
+            toast.type === 'error' ? 'bg-red-50 border-red-500' :
+            'bg-blue-50 border-blue-500'
+          }`}>
+            <div className="flex-shrink-0">
+              {toast.type === 'success' && (
+                <Award className="w-6 h-6 text-green-600" />
+              )}
+              {toast.type === 'error' && (
+                <X className="w-6 h-6 text-red-600" />
+              )}
+              {toast.type === 'info' && (
+                <Mail className="w-6 h-6 text-blue-600" />
+              )}
+            </div>
+            <p className={`font-medium ${
+              toast.type === 'success' ? 'text-green-800' :
+              toast.type === 'error' ? 'text-red-800' :
+              'text-blue-800'
+            }`}>
+              {toast.message}
+            </p>
+            <button
+              onClick={() => setToast({ ...toast, show: false })}
+              className={`ml-2 ${
+                toast.type === 'success' ? 'text-green-600 hover:text-green-800' :
+                toast.type === 'error' ? 'text-red-600 hover:text-red-800' :
+                'text-blue-600 hover:text-blue-800'
+              }`}
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
       )}

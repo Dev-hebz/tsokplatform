@@ -46,6 +46,18 @@ export default function AdminApprovalsPage() {
     email: ''
   });
   const [editLoading, setEditLoading] = useState(false);
+  const [toast, setToast] = useState<{show: boolean; message: string; type: 'success' | 'error' | 'info'}>({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -68,48 +80,38 @@ export default function AdminApprovalsPage() {
   const fetchAllUsers = async () => {
     setLoading(true);
     try {
-      // Fetch pending users
-      const pendingQuery = query(
-        collection(db, 'users'),
-        where('status', '==', 'pending'),
-        orderBy('createdAt', 'desc')
-      );
-      const pendingSnapshot = await getDocs(pendingQuery);
-      const pending = pendingSnapshot.docs.map(doc => ({
+      // Fetch all users first
+      const allUsersQuery = query(collection(db, 'users'));
+      const allUsersSnapshot = await getDocs(allUsersQuery);
+      const allUsers = allUsersSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as PendingUser));
 
-      // Fetch approved users
-      const approvedQuery = query(
-        collection(db, 'users'),
-        where('status', '==', 'approved'),
-        orderBy('createdAt', 'desc')
-      );
-      const approvedSnapshot = await getDocs(approvedQuery);
-      const approved = approvedSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as PendingUser));
-
-      // Fetch rejected users
-      const rejectedQuery = query(
-        collection(db, 'users'),
-        where('status', '==', 'rejected'),
-        orderBy('createdAt', 'desc')
-      );
-      const rejectedSnapshot = await getDocs(rejectedQuery);
-      const rejected = rejectedSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as PendingUser));
+      // Filter users by status on client side
+      const pending = allUsers.filter(u => u.status === 'pending')
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      
+      const approved = allUsers.filter(u => u.status === 'approved' || !u.status)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      
+      const rejected = allUsers.filter(u => u.status === 'rejected')
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
       setPendingUsers(pending);
       setApprovedUsers(approved);
       setRejectedUsers(rejected);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching users:', error);
-      alert('Failed to load users. Please refresh the page.');
+      
+      // Professional error notification
+      setLoading(false);
+      setTimeout(() => {
+        if (confirm('Failed to load users. Would you like to try again?')) {
+          fetchAllUsers();
+        }
+      }, 100);
+      return;
     } finally {
       setLoading(false);
     }
@@ -127,12 +129,12 @@ export default function AdminApprovalsPage() {
     if (!editingUser) return;
 
     if (!editFormData.name.trim()) {
-      alert('Name is required');
+      showToast('Name is required', 'error');
       return;
     }
 
     if (!editFormData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editFormData.email)) {
-      alert('Valid email is required');
+      showToast('Valid email is required', 'error');
       return;
     }
 
@@ -155,10 +157,10 @@ export default function AdminApprovalsPage() {
       setRejectedUsers(prev => prev.map(updateUser));
 
       setEditingUser(null);
-      alert('✓ User updated successfully!');
+      showToast('User updated successfully!', 'success');
     } catch (error) {
       console.error('Error updating user:', error);
-      alert('Failed to update user. Please try again.');
+      showToast('Failed to update user. Please try again.', 'error');
     } finally {
       setEditLoading(false);
     }
@@ -183,10 +185,10 @@ export default function AdminApprovalsPage() {
         setApprovedUsers(prev => [{ ...user, status: 'approved' }, ...prev]);
       }
 
-      alert(`✓ User "${userName}" has been approved!`);
+      showToast(`User "${userName}" has been approved!`, 'success');
     } catch (error) {
       console.error('Error approving user:', error);
-      alert('Failed to approve user. Please try again.');
+      showToast('Failed to approve user. Please try again.', 'error');
     } finally {
       setActionLoading(null);
     }
@@ -215,10 +217,10 @@ export default function AdminApprovalsPage() {
         setRejectedUsers(prev => [{ ...user, status: 'rejected' }, ...prev]);
       }
 
-      alert(`✗ User "${userName}" has been rejected.`);
+      showToast(`User "${userName}" has been rejected.`, 'info');
     } catch (error) {
       console.error('Error rejecting user:', error);
-      alert('Failed to reject user. Please try again.');
+      showToast('Failed to reject user. Please try again.', 'error');
     } finally {
       setActionLoading(null);
     }
@@ -238,10 +240,10 @@ export default function AdminApprovalsPage() {
       setApprovedUsers(prev => prev.filter(u => u.id !== userId));
       setRejectedUsers(prev => prev.filter(u => u.id !== userId));
 
-      alert(`User "${userName}" has been permanently deleted.`);
+      showToast(`User "${userName}" has been permanently deleted.`, 'success');
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Failed to delete user. Please try again.');
+      showToast('Failed to delete user. Please try again.', 'error');
     } finally {
       setActionLoading(null);
     }
@@ -620,6 +622,46 @@ export default function AdminApprovalsPage() {
                 <span>Save Changes</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Professional Toast Notification */}
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top-5 duration-300">
+          <div className={`flex items-center space-x-3 px-6 py-4 rounded-lg shadow-2xl border-l-4 ${
+            toast.type === 'success' ? 'bg-green-50 border-green-500' :
+            toast.type === 'error' ? 'bg-red-50 border-red-500' :
+            'bg-blue-50 border-blue-500'
+          }`}>
+            <div className="flex-shrink-0">
+              {toast.type === 'success' && (
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              )}
+              {toast.type === 'error' && (
+                <XCircle className="w-6 h-6 text-red-600" />
+              )}
+              {toast.type === 'info' && (
+                <AlertCircle className="w-6 h-6 text-blue-600" />
+              )}
+            </div>
+            <p className={`font-medium ${
+              toast.type === 'success' ? 'text-green-800' :
+              toast.type === 'error' ? 'text-red-800' :
+              'text-blue-800'
+            }`}>
+              {toast.message}
+            </p>
+            <button
+              onClick={() => setToast({ ...toast, show: false })}
+              className={`ml-2 ${
+                toast.type === 'success' ? 'text-green-600 hover:text-green-800' :
+                toast.type === 'error' ? 'text-red-600 hover:text-red-800' :
+                'text-blue-600 hover:text-blue-800'
+              }`}
+            >
+              <XIcon className="w-5 h-5" />
+            </button>
           </div>
         </div>
       )}
