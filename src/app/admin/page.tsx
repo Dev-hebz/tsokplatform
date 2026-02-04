@@ -19,7 +19,8 @@ import {
   Eye,
   LogOut,
   Menu,
-  X
+  X,
+  UserCheck
 } from 'lucide-react';
 
 interface Course {
@@ -171,6 +172,13 @@ export default function AdminDashboard() {
           >
             <Users className="w-5 h-5" />
             <span>Users</span>
+          </Link>
+          <Link
+            href="/admin/approvals"
+            className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-blue-800 transition-colors"
+          >
+            <UserCheck className="w-5 h-5" />
+            <span>Approvals</span>
           </Link>
         </nav>
 

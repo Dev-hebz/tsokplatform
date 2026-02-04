@@ -6,8 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth, db } from '../../lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
-import { ArrowLeft, Mail, Lock, LogIn } from 'lucide-react';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { ArrowLeft, Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,6 +23,28 @@ export default function LoginPage() {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Check user approval status
+      const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        
+        // Check if user is approved
+        if (userData.status === 'pending') {
+          setError('Your account is pending approval. Please contact TSOK Officers to approve your registration.');
+          await auth.signOut();
+          setLoading(false);
+          return;
+        }
+        
+        if (userData.status === 'rejected') {
+          setError('Your account registration was rejected. Please contact TSOK Officers for more information.');
+          await auth.signOut();
+          setLoading(false);
+          return;
+        }
+      }
       
       // Track location
       try {
@@ -41,7 +63,17 @@ export default function LoginPage() {
       
       router.push('/courses');
     } catch (err: any) {
-      setError(err.message || 'Failed to login');
+      if (err.code === 'auth/user-not-found') {
+        setError('No account found with this email. Please register first.');
+      } else if (err.code === 'auth/wrong-password') {
+        setError('Incorrect password. Please try again.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Invalid email address format.');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Too many failed attempts. Please try again later.');
+      } else {
+        setError(err.message || 'Failed to login');
+      }
     } finally {
       setLoading(false);
     }
@@ -195,6 +227,13 @@ export default function LoginPage() {
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link href="/register" className="text-tsok-blue font-semibold hover:text-blue-900">
+              Register here
+            </Link>
+          </p>
+
+          <p className="mt-4 text-center text-sm text-gray-600">
             Administrator?{' '}
             <Link href="/admin/login" className="text-tsok-blue font-semibold hover:text-blue-900">
               Access Admin Portal

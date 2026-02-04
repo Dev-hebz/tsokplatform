@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { collection, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../../lib/firebase';
 import { onAuthStateChanged, deleteUser } from 'firebase/auth';
 import { isAdmin } from '../../../lib/adminAuth';
@@ -17,7 +17,10 @@ import {
   Search,
   Plus,
   Trash2,
-  MapPin
+  MapPin,
+  Edit,
+  X,
+  Save
 } from 'lucide-react';
 
 interface User {
@@ -25,6 +28,8 @@ interface User {
   name: string;
   email: string;
   createdAt: string;
+  status?: string;
+  role?: string;
   progress?: any;
   location?: {
     country: string;
@@ -39,6 +44,14 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    email: '',
+    status: 'approved',
+    role: 'student'
+  });
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -72,6 +85,56 @@ export default function AdminUsersPage() {
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setEditFormData({
+      name: user.name,
+      email: user.email,
+      status: user.status || 'approved',
+      role: user.role || 'student'
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return;
+
+    if (!editFormData.name.trim()) {
+      alert('Name is required');
+      return;
+    }
+
+    if (!editFormData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editFormData.email)) {
+      alert('Valid email is required');
+      return;
+    }
+
+    setEditLoading(true);
+    try {
+      await updateDoc(doc(db, 'users', editingUser.id), {
+        name: editFormData.name.trim(),
+        email: editFormData.email.toLowerCase().trim(),
+        status: editFormData.status,
+        role: editFormData.role,
+        updatedAt: new Date().toISOString()
+      });
+
+      // Update local state
+      setUsers(users.map(u => 
+        u.id === editingUser.id 
+          ? { ...u, ...editFormData }
+          : u
+      ));
+
+      setEditingUser(null);
+      alert('✓ User updated successfully!');
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('Failed to update user. Please try again.');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -191,6 +254,9 @@ export default function AdminUsersPage() {
                       Email
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Location
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -224,6 +290,15 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                          user.role === 'admin' 
+                            ? 'bg-purple-100 text-purple-800' 
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {user.role === 'admin' ? '👑 Admin' : '👤 Student'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex items-center space-x-2 text-gray-700">
                           <MapPin className="w-4 h-4 text-gray-400" />
                           <span className="text-sm">
@@ -252,13 +327,22 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleDeleteUser(user.id, user.name, user.email)}
-                          className="text-red-600 hover:text-red-900 flex items-center space-x-1 text-sm font-medium"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span>Delete</span>
-                        </button>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="text-blue-600 hover:text-blue-900 flex items-center space-x-1 text-sm font-medium"
+                          >
+                            <Edit className="w-4 h-4" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user.id, user.name, user.email)}
+                            className="text-red-600 hover:text-red-900 flex items-center space-x-1 text-sm font-medium"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -316,6 +400,138 @@ export default function AdminUsersPage() {
           </div>
         )}
       </main>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            {/* Loading Overlay */}
+            {editLoading && (
+              <div className="absolute inset-0 bg-white bg-opacity-90 rounded-2xl flex items-center justify-center z-10">
+                <div className="text-center">
+                  <div className="relative w-20 h-20 mb-4 mx-auto">
+                    <Image
+                      src="/tsok-logo.png"
+                      alt="TSOK Logo"
+                      width={80}
+                      height={80}
+                      className="object-contain animate-pulse"
+                    />
+                    <div className="absolute inset-0 border-4 border-tsok-blue border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                  <p className="text-gray-700 font-semibold">Updating user...</p>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-800">Edit User</h3>
+              <button
+                onClick={() => setEditingUser(null)}
+                disabled={editLoading}
+                className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Name Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-tsok-blue"
+                  placeholder="Juan Dela Cruz"
+                  disabled={editLoading}
+                />
+              </div>
+
+              {/* Email Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-tsok-blue"
+                  placeholder="email@example.com"
+                  disabled={editLoading}
+                />
+              </div>
+
+              {/* Status Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Account Status
+                </label>
+                <select
+                  value={editFormData.status}
+                  onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-tsok-blue"
+                  disabled={editLoading}
+                >
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+
+              {/* Role Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  User Role
+                </label>
+                <select
+                  value={editFormData.role}
+                  onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-tsok-blue"
+                  disabled={editLoading}
+                >
+                  <option value="student">👤 Student</option>
+                  <option value="admin">👑 Admin</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  ⚠️ Admin users can manage courses, users, and approvals
+                </p>
+              </div>
+
+              {/* User Info */}
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-xs text-gray-500 mb-1">User ID:</p>
+                <p className="text-sm font-mono text-gray-700">{editingUser.id}</p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+              <button
+                onClick={() => setEditingUser(null)}
+                disabled={editLoading}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={editLoading}
+                className="flex items-center space-x-2 px-6 py-2 bg-tsok-blue text-white rounded-lg hover:bg-blue-800 transition-colors disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                <span>Save Changes</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
